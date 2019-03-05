@@ -3,12 +3,15 @@ import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import _omit from 'lodash/omit'
 import _mapKeys from 'lodash/mapKeys'
+import _includes from 'lodash/includes'
 import cardSDK from 'pokemontcgsdk'
 import './App.css';
 
 class App extends Component {
   state = {
-    searchParams: {},
+    searchParams: {
+      nameArray: [],
+    },
     searchData: [],
     searchDisabled: true,
     sets: [],
@@ -18,7 +21,7 @@ class App extends Component {
     cardSDK.set.where({})
     .then(set => {
         console.log(set)
-        this.setState({ sets: set, searchDisabled: false })
+        this.setState({ sets: set })
     })
   }
 
@@ -36,11 +39,13 @@ class App extends Component {
   }
 
   onInputChange = (event) => {
-    const inputStr = event.target.value.trim()
+    const inputStr = event.target.value.trim().toLowerCase()
     const keywords = this.splitStringToKeywords(inputStr)
     const searchParams = {
       nameArray: []
     }
+    let invalidInput = false
+
     _map(keywords, (str) => {
       // Set Code
       if (_startsWith(str, 's:') || _startsWith(str, 'set:')) {
@@ -48,15 +53,20 @@ class App extends Component {
         if(cleanedStr !== '') {
           searchParams.setCode = cleanedStr
         }
+      // Artist
       } else if (_startsWith(str, 'a:') || _startsWith(str, 'artist:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
         if(cleanedStr !== '') {
           searchParams.artist = cleanedStr
         }
+      // Format
       } else if (_startsWith(str, 'f:') || _startsWith(str, 'format:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
-        if(cleanedStr !== '') {
+        if(_includes(['standard', 'expanded'], cleanedStr) ) {
           searchParams.format = cleanedStr
+        } else if (cleanedStr !== '') {
+          searchParams.format = 'invalid format'
+          invalidInput = true
         }
       } else {
         if(str !== '') {
@@ -64,19 +74,18 @@ class App extends Component {
         }
       }
     })
-
-    if(searchParams.nameArray.length > 0) {
-      searchParams.name = searchParams.nameArray.join()
-    }
     
     this.setState({
       searchParams,
+      searchDisabled: invalidInput,
     })
   }
 
   onSubmit = () => {
     const {sets, searchParams} = this.state
     const cleanedSearchParams = _omit(searchParams, ['nameArray', 'format'])
+    cleanedSearchParams.name = searchParams.nameArray.join()
+
     cardSDK.card.where(cleanedSearchParams).then(cards => {
       // Sort the cards found based off release date
       const sortedCards = cards.sort((a, b) => {
@@ -107,29 +116,33 @@ class App extends Component {
   render() {
     const { searchParams, searchData } = this.state
 
-    const paramsToUse = _omit(searchParams, 'name')
     const displayedParams = []
     const displayedImages = []
-    _mapKeys(paramsToUse, (value, key) => {
+    _mapKeys(searchParams, (value, key) => {
       if(key === 'setCode') {
-        displayedParams.push(<div>Set is {value}</div>)
+        displayedParams.push(<code><span className="parameter">set</span> is <span className="value">{value}</span></code>)
       } else if (key === 'artist') {
-        displayedParams.push(<div>Artist name contains {value}</div>)
+        displayedParams.push(<code><span className="parameter">artist name</span> contains <span className="value">{value}</span></code>)
       } else if (key === 'format') {
-        displayedParams.push(<div>Legal in {value}</div>)
+        if (value === 'invalid') {
+          displayedParams.push(<code><span className="invalidValue">invalid format legality</span></code>)
+        } else {
+          displayedParams.push(<code><span className="parameter">legal</span> in <span className="value">{value}</span></code>)
+        }
+
       } else if (key === 'nameArray' && value.length > 0) {
-        let nameStr = 'Name contains '
+        let nameStr = ''
         value.map((str, index) => index
           ? nameStr += `, ${str}` 
           : nameStr += `${str}`)
 
-        displayedParams.push(<div>{nameStr}</div>)
+        displayedParams.push(<div><span className="parameter">name</span> contains <span className="value">{nameStr}</span></div>)
       }
     })
 
     searchData.map(card => {
       if(card.imageUrl) {
-        displayedImages.push(<img src={card.imageUrl} alt="pokemon"/>)
+        displayedImages.push(<img src={card.imageUrl} alt={`${card.name} (${card.id})`}/>)
       }
 
       return true

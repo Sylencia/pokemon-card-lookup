@@ -73,5 +73,6 @@ module.exports = {
       },
       "allowChildren": true
     }],
+    'react/jsx-filename-extension': OFF,
   },
 }

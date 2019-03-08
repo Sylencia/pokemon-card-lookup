@@ -21,23 +21,22 @@ class App extends Component {
 
   componentDidMount() {
     cardSDK.set.where({})
-    .then(set => {
-        console.log(set)
+      .then(set => {
         this.setState({ sets: set })
-    })
+      })
   }
 
   splitStringToKeywords = (str) => {
     return str.match(/\\?.|^$/g).reduce((p, c) => {
-          if(c === '"'){
-              p.quote ^= 1;
-          }else if(!p.quote && c === ' '){
-              p.a.push('');
-          }else{
-              p.a[p.a.length-1] += c.replace(/\\(.)/,"$1");
-          }
-          return  p;
-      }, {a: ['']}).a
+      if (c === '"') {
+        p.quote ^= 1
+      } else if (!p.quote && c === ' ') {
+        p.a.push('')
+      } else {
+        p.a[p.a.length - 1] += c.replace(/\\(.)/, '$1')
+      }
+      return p
+    }, { a: [''] }).a
   }
 
   onInputChange = (event) => {
@@ -53,19 +52,19 @@ class App extends Component {
       // Set Code
       if (_startsWith(str, 's:') || _startsWith(str, 'set:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
-        if(cleanedStr !== '') {
+        if (cleanedStr !== '') {
           searchParams.setCode = cleanedStr
         }
       // Artist
       } else if (_startsWith(str, 'a:') || _startsWith(str, 'artist:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
-        if(cleanedStr !== '') {
+        if (cleanedStr !== '') {
           searchParams.artist = cleanedStr
         }
       // Format
       } else if (_startsWith(str, 'f:') || _startsWith(str, 'format:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
-        if(_includes(['standard', 'expanded'], cleanedStr) ) {
+        if (_includes(['standard', 'expanded'], cleanedStr)) {
           searchParams.format = cleanedStr
         } else if (cleanedStr !== '') {
           searchParams.format = 'invalid format'
@@ -74,14 +73,14 @@ class App extends Component {
       // Rarity
       } else if (_startsWith(str, 'r:') || _startsWith(str, 'rarity:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
-        if(_includes(['common', 'uncommon', 'rare', ''], cleanedStr) ) {
+        if (_includes(['common', 'uncommon', 'rare', ''], cleanedStr)) {
           searchParams.format = cleanedStr
         } else if (cleanedStr !== '') {
           searchParams.format = 'invalid format'
           invalidInput = true
         }
       } else {
-        if(str !== '') {
+        if (str !== '') {
           searchParams.name.push(str)
         }
       }
@@ -94,7 +93,7 @@ class App extends Component {
   }
 
   onSubmit = () => {
-    const {sets, searchParams} = this.state
+    const { sets, searchParams } = this.state
     const cleanedSearchParams = _omit(searchParams, ['name', 'format'])
     cleanedSearchParams.name = searchParams.name.join()
 
@@ -114,7 +113,7 @@ class App extends Component {
 
       const formatCheck = {
         'standard': card => sets.find(set => set.code === card.setCode).standardLegal,
-        'expanded': card => sets.find(set => set.code === card.setCode).expandedLegal
+        'expanded': card => sets.find(set => set.code === card.setCode).expandedLegal,
       }[searchParams.format] || (card => true)
 
       const filteredCards = sortedCards.filter(formatCheck)
@@ -126,35 +125,63 @@ class App extends Component {
   }
 
   render() {
-    const { searchParams, searchData } = this.state
+    const { searchParams, searchData, searchDisabled } = this.state
 
     const displayedParams = []
     const displayedImages = []
     _mapKeys(searchParams, (value, key) => {
-      if(key === 'setCode') {
-        displayedParams.push(<code><span className={styles.parameter}>set</span> is <span className="value">{value}</span></code>)
+      if (key === 'setCode') {
+        displayedParams.push(
+          <code>
+            <span className={styles.parameter}>set</span>
+            {' is '}
+            <span className="value">{value}</span>
+          </code>
+        )
       } else if (key === 'artist') {
-        displayedParams.push(<code><span className={styles.parameter}>artist name</span> contains <span className="value">{value}</span></code>)
+        displayedParams.push(
+          <code>
+            <span className={styles.parameter}>artist name</span>
+            {' contains '}
+            <span className="value">{value}</span>
+          </code>
+        )
       } else if (key === 'format') {
         if (value === 'invalid') {
-          displayedParams.push(<code><span className={styles.invalidValue}>invalid format legality</span></code>)
+          displayedParams.push(
+            <code>
+              <span className={styles.invalidValue}>invalid format legality</span>
+            </code>
+          )
         } else {
-          displayedParams.push(<code><span className={styles.parameter}>legal</span> in <span className="value">{value}</span></code>)
+          displayedParams.push(
+            <code>
+              <span className={styles.parameter}>legal</span>
+              {' in '}
+              <span className="value">{value}</span>
+            </code>)
         }
-
       } else if (key === 'name' && value.length > 0) {
         let nameStr = ''
-        value.map((str, index) => index
-          ? nameStr += `, ${str}`
-          : nameStr += `${str}`)
+        value.map((str, index) => {
+          index
+            ? nameStr += `, ${str}`
+            : nameStr += `${str}`
+        })
 
-        displayedParams.push(<div><span className={styles.parameter}>name</span> contains <span className="value">{nameStr}</span></div>)
+        displayedParams.push(
+          <div>
+            <span className={styles.parameter}>name</span>
+            { ' contains ' }
+            <span className="value">{nameStr}</span>
+          </div>
+        )
       }
     })
 
     searchData.map(card => {
-      if(card.imageUrl) {
-        displayedImages.push(<img src={card.imageUrl} alt={`${card.name} (${card.id})`}/>)
+      if (card.imageUrl) {
+        displayedImages.push(<img src={card.imageUrl} alt={`${card.name} (${card.id})`} />)
       }
 
       return true
@@ -167,13 +194,13 @@ class App extends Component {
           name="card"
           onChange={this.onInputChange}
         />
-        <button onClick={this.onSubmit} disabled={this.state.searchDisabled}>submit</button>
+        <button type="submit" onClick={this.onSubmit} disabled={searchDisabled}>submit</button>
         {displayedParams}
         <div className="images">{displayedImages}</div>
         <Card />
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App

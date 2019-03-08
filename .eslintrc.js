@@ -1,4 +1,6 @@
-const OFF = 0, WARN = 1, ERROR = 2
+const OFF = 0,
+  WARN = 1,
+  ERROR = 2
 
 module.exports = {
   env: {
@@ -17,62 +19,31 @@ module.exports = {
       experimentalObjectRestSpread: true,
     },
   },
-  plugins: [
-    'immutable',
-    'import',
-    'jsx-a11y',
-    'promise',
-    'react',
-    'standard',
-  ],
+  plugins: ['prettier', 'react', 'standard'],
   extends: [
-    'airbnb',
+    'prettier',
     'eslint:recommended',
     'plugin:react/recommended',
-    'plugin:jsx-a11y/recommended',
     'standard',
-    'standard-react',
   ],
   settings: {
     'import/resolver': {
       node: {
-        moduleDirectory: [
-          'node_modules',
-          'src/js',
-        ],
+        moduleDirectory: ['node_modules', 'src/js'],
       },
     },
   },
   rules: {
-    'comma-dangle' : [ERROR, 'always-multiline'],
-    'object-curly-spacing': [ERROR, 'always'],
-    'object-shorthand': [ERROR, 'properties'],
-    'max-len': [ERROR, 100],
-    'generator-star-spacing': ['error', { before: true, after: true }],
-    'immutable/no-mutation': OFF,
-    'immutable/no-this': OFF,
-    'import/extensions': OFF,
-    'import/no-extraneous-dependencies': OFF,
-    'import/no-unresolved': OFF,
-    'import/prefer-default-export': OFF,
-    'jsx-quotes': ['error', 'prefer-double'],
+    'comma-dangle': [ERROR, 'always-multiline'],
+    // 'object-curly-spacing': [ERROR, 'always'],
+    // 'object-shorthand': [ERROR, 'properties'],
+    // 'jsx-quotes': ['error', 'prefer-double'],
     'react/jsx-pascal-case': OFF,
     'react/forbid-prop-types': OFF,
     'space-before-function-paren': OFF,
-    'no-extra-parens': OFF,
-    'camelcase': OFF,
-    "jsx-a11y/anchor-is-valid": [ "error", {
-      "components": [ "Link" ],
-      "specialLink": [ "to", "hrefLeft", "hrefRight" ],
-      "aspects": [ "noHref", "invalidHref", "preferButton" ]
-    }],
-    "jsx-a11y/label-has-for": [ ERROR, {
-      "components": [ "Label" ],
-      "required": {
-          "every": [ "nesting", "id" ]
-      },
-      "allowChildren": true
-    }],
+    // 'no-extra-parens': OFF,
+    // 'camelcase': OFF,
     'react/jsx-filename-extension': OFF,
+    'prettier/prettier': 'error',
   },
 }

@@ -20,27 +20,29 @@ class App extends Component {
   }
 
   componentDidMount() {
-    cardSDK.set.where({})
-      .then(set => {
-        this.setState({ sets: set })
-      })
+    cardSDK.set.where({}).then(set => {
+      this.setState({ sets: set })
+    })
   }
 
-  splitStringToKeywords = (str) => {
-    return str.match(/\\?.|^$/g).reduce((p, c) => {
-      if (c === '"') {
-        p.quote ^= 1
-      } else if (!p.quote && c === ' ') {
-        p.a.push('')
-      } else {
-        p.a[p.a.length - 1] += c.replace(/\\(.)/, '$1')
-      }
-      return p
-    }, { a: [''] }).a
+  splitStringToKeywords = str => {
+    return str.match(/\\?.|^$/g).reduce(
+      (p, c) => {
+        if (c === '"') {
+          p.quote ^= 1
+        } else if (!p.quote && c === ' ') {
+          p.a.push('')
+        } else {
+          p.a[p.a.length - 1] += c.replace(/\\(.)/, '$1')
+        }
+        return p
+      },
+      { a: [''] }
+    ).a
   }
 
-  onInputChange = (event) => {
-    const inputStr = event.target.value.trim().toLowerCase()
+  onInputChange = value => {
+    const inputStr = value.trim().toLowerCase()
     const keywords = this.splitStringToKeywords(inputStr)
     const searchParams = {
       name: [],
@@ -48,20 +50,20 @@ class App extends Component {
     }
     let invalidInput = false
 
-    _map(keywords, (str) => {
+    _map(keywords, str => {
       // Set Code
       if (_startsWith(str, 's:') || _startsWith(str, 'set:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
         if (cleanedStr !== '') {
           searchParams.setCode = cleanedStr
         }
-      // Artist
+        // Artist
       } else if (_startsWith(str, 'a:') || _startsWith(str, 'artist:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
         if (cleanedStr !== '') {
           searchParams.artist = cleanedStr
         }
-      // Format
+        // Format
       } else if (_startsWith(str, 'f:') || _startsWith(str, 'format:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
         if (_includes(['standard', 'expanded'], cleanedStr)) {
@@ -70,7 +72,7 @@ class App extends Component {
           searchParams.format = 'invalid format'
           invalidInput = true
         }
-      // Rarity
+        // Rarity
       } else if (_startsWith(str, 'r:') || _startsWith(str, 'rarity:')) {
         const cleanedStr = str.substring(str.indexOf(':') + 1)
         if (_includes(['common', 'uncommon', 'rare', ''], cleanedStr)) {
@@ -106,15 +108,22 @@ class App extends Component {
         }
 
         // Otherwise sort by release date
-        const aRelease = new Date(sets.find(set => set.code === a.setCode).releaseDate)
-        const bRelease = new Date(sets.find(set => set.code === b.setCode).releaseDate)
+        const aRelease = new Date(
+          sets.find(set => set.code === a.setCode).releaseDate
+        )
+        const bRelease = new Date(
+          sets.find(set => set.code === b.setCode).releaseDate
+        )
         return bRelease - aRelease
       })
 
-      const formatCheck = {
-        'standard': card => sets.find(set => set.code === card.setCode).standardLegal,
-        'expanded': card => sets.find(set => set.code === card.setCode).expandedLegal,
-      }[searchParams.format] || (card => true)
+      const formatCheck =
+        {
+          standard: card =>
+            sets.find(set => set.code === card.setCode).standardLegal,
+          expanded: card =>
+            sets.find(set => set.code === card.setCode).expandedLegal,
+        }[searchParams.format] || (card => true)
 
       const filteredCards = sortedCards.filter(formatCheck)
 
@@ -150,7 +159,9 @@ class App extends Component {
         if (value === 'invalid') {
           displayedParams.push(
             <code>
-              <span className={styles.invalidValue}>invalid format legality</span>
+              <span className={styles.invalidValue}>
+                invalid format legality
+              </span>
             </code>
           )
         } else {
@@ -159,20 +170,19 @@ class App extends Component {
               <span className={styles.parameter}>legal</span>
               {' in '}
               <span className="value">{value}</span>
-            </code>)
+            </code>
+          )
         }
       } else if (key === 'name' && value.length > 0) {
         let nameStr = ''
         value.map((str, index) => {
-          index
-            ? nameStr += `, ${str}`
-            : nameStr += `${str}`
+          index ? (nameStr += `, ${str}`) : (nameStr += `${str}`)
         })
 
         displayedParams.push(
           <div>
             <span className={styles.parameter}>name</span>
-            { ' contains ' }
+            {' contains '}
             <span className="value">{nameStr}</span>
           </div>
         )
@@ -181,7 +191,9 @@ class App extends Component {
 
     searchData.map(card => {
       if (card.imageUrl) {
-        displayedImages.push(<img src={card.imageUrl} alt={`${card.name} (${card.id})`} />)
+        displayedImages.push(
+          <img src={card.imageUrl} alt={`${card.name} (${card.id})`} />
+        )
       }
 
       return true
@@ -190,7 +202,9 @@ class App extends Component {
     return (
       <div className={styles.app}>
         <SearchBox onChange={this.onInputChange} />
-        <button type="submit" onClick={this.onSubmit} disabled={searchDisabled}>submit</button>
+        <button type="submit" onClick={this.onSubmit} disabled={searchDisabled}>
+          submit
+        </button>
         {displayedParams}
         <div className="images">{displayedImages}</div>
       </div>

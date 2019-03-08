@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
-export const SearchBox = ({
-  onChange,
-}) => {
+export const SearchBox = ({ onChange }) => {
   const [inputValue, setInputValue] = useState()
 
   const handleChange = event => {
@@ -13,13 +11,7 @@ export const SearchBox = ({
     onChange(value)
   }
 
-  return (
-    <input
-      type="text"
-      value={inputValue}
-      onChange={handleChange}
-    />
-  )
+  return <input type="text" value={inputValue} onChange={handleChange} />
 }
 
 SearchBox.propTypes = {

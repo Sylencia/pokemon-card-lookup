@@ -5,12 +5,14 @@ import _omit from 'lodash/omit'
 import _mapKeys from 'lodash/mapKeys'
 import _includes from 'lodash/includes'
 import cardSDK from 'pokemontcgsdk'
-import './App.css';
+import styles from './App.module.scss'
+
+import Card from './Card'
 
 class App extends Component {
   state = {
     searchParams: {
-      nameArray: [],
+      name: [],
     },
     searchData: [],
     searchDisabled: true,
@@ -42,7 +44,8 @@ class App extends Component {
     const inputStr = event.target.value.trim().toLowerCase()
     const keywords = this.splitStringToKeywords(inputStr)
     const searchParams = {
-      nameArray: []
+      name: [],
+      rarity: [],
     }
     let invalidInput = false
 
@@ -68,13 +71,22 @@ class App extends Component {
           searchParams.format = 'invalid format'
           invalidInput = true
         }
+      // Rarity
+      } else if (_startsWith(str, 'r:') || _startsWith(str, 'rarity:')) {
+        const cleanedStr = str.substring(str.indexOf(':') + 1)
+        if(_includes(['common', 'uncommon', 'rare', ''], cleanedStr) ) {
+          searchParams.format = cleanedStr
+        } else if (cleanedStr !== '') {
+          searchParams.format = 'invalid format'
+          invalidInput = true
+        }
       } else {
         if(str !== '') {
-          searchParams.nameArray.push(str)
+          searchParams.name.push(str)
         }
       }
     })
-    
+
     this.setState({
       searchParams,
       searchDisabled: invalidInput,
@@ -83,8 +95,8 @@ class App extends Component {
 
   onSubmit = () => {
     const {sets, searchParams} = this.state
-    const cleanedSearchParams = _omit(searchParams, ['nameArray', 'format'])
-    cleanedSearchParams.name = searchParams.nameArray.join()
+    const cleanedSearchParams = _omit(searchParams, ['name', 'format'])
+    cleanedSearchParams.name = searchParams.name.join()
 
     cardSDK.card.where(cleanedSearchParams).then(cards => {
       // Sort the cards found based off release date
@@ -120,23 +132,23 @@ class App extends Component {
     const displayedImages = []
     _mapKeys(searchParams, (value, key) => {
       if(key === 'setCode') {
-        displayedParams.push(<code><span className="parameter">set</span> is <span className="value">{value}</span></code>)
+        displayedParams.push(<code><span className={styles.parameter}>set</span> is <span className="value">{value}</span></code>)
       } else if (key === 'artist') {
-        displayedParams.push(<code><span className="parameter">artist name</span> contains <span className="value">{value}</span></code>)
+        displayedParams.push(<code><span className={styles.parameter}>artist name</span> contains <span className="value">{value}</span></code>)
       } else if (key === 'format') {
         if (value === 'invalid') {
-          displayedParams.push(<code><span className="invalidValue">invalid format legality</span></code>)
+          displayedParams.push(<code><span className={styles.invalidValue}>invalid format legality</span></code>)
         } else {
-          displayedParams.push(<code><span className="parameter">legal</span> in <span className="value">{value}</span></code>)
+          displayedParams.push(<code><span className={styles.parameter}>legal</span> in <span className="value">{value}</span></code>)
         }
 
-      } else if (key === 'nameArray' && value.length > 0) {
+      } else if (key === 'name' && value.length > 0) {
         let nameStr = ''
         value.map((str, index) => index
-          ? nameStr += `, ${str}` 
+          ? nameStr += `, ${str}`
           : nameStr += `${str}`)
 
-        displayedParams.push(<div><span className="parameter">name</span> contains <span className="value">{nameStr}</span></div>)
+        displayedParams.push(<div><span className={styles.parameter}>name</span> contains <span className="value">{nameStr}</span></div>)
       }
     })
 
@@ -149,17 +161,16 @@ class App extends Component {
     })
 
     return (
-      <div className="App">
-        <header className="App-header">
-          <input 
-            type="text"
-            name="card"
-            onChange={this.onInputChange} 
-          />
-          <button onClick={this.onSubmit} disabled={this.state.searchDisabled}>submit</button>
-          {displayedParams}
-          <div className="images">{displayedImages}</div>
-        </header>
+      <div className={styles.app}>
+        <input
+          type="text"
+          name="card"
+          onChange={this.onInputChange}
+        />
+        <button onClick={this.onSubmit} disabled={this.state.searchDisabled}>submit</button>
+        {displayedParams}
+        <div className="images">{displayedImages}</div>
+        <Card />
       </div>
     );
   }

@@ -7,7 +7,7 @@ import _includes from 'lodash/includes'
 import cardSDK from 'pokemontcgsdk'
 import styles from './App.module.scss'
 
-import Card from './Card'
+import { SearchBox } from './components/SearchBox'
 
 class App extends Component {
   state = {
@@ -189,15 +189,10 @@ class App extends Component {
 
     return (
       <div className={styles.app}>
-        <input
-          type="text"
-          name="card"
-          onChange={this.onInputChange}
-        />
+        <SearchBox onChange={this.onInputChange} />
         <button type="submit" onClick={this.onSubmit} disabled={searchDisabled}>submit</button>
         {displayedParams}
         <div className="images">{displayedImages}</div>
-        <Card />
       </div>
     )
   }

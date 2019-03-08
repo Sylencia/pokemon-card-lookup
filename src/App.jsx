@@ -8,6 +8,7 @@ import cardSDK from 'pokemontcgsdk'
 import styles from './App.module.scss'
 
 import { SearchBox } from './components/SearchBox'
+import { CardDetails } from './components/CardDetails'
 
 class App extends Component {
   state = {
@@ -137,7 +138,7 @@ class App extends Component {
     const { searchParams, searchData, searchDisabled } = this.state
 
     const displayedParams = []
-    const displayedImages = []
+    const displayedData = []
     _mapKeys(searchParams, (value, key) => {
       if (key === 'setCode') {
         displayedParams.push(
@@ -177,6 +178,8 @@ class App extends Component {
         let nameStr = ''
         value.map((str, index) => {
           index ? (nameStr += `, ${str}`) : (nameStr += `${str}`)
+
+          return true
         })
 
         displayedParams.push(
@@ -190,11 +193,7 @@ class App extends Component {
     })
 
     searchData.map(card => {
-      if (card.imageUrl) {
-        displayedImages.push(
-          <img src={card.imageUrl} alt={`${card.name} (${card.id})`} />
-        )
-      }
+      displayedData.push(<CardDetails data={card} />)
 
       return true
     })
@@ -206,7 +205,7 @@ class App extends Component {
           submit
         </button>
         {displayedParams}
-        <div className="images">{displayedImages}</div>
+        <div className="images">{displayedData}</div>
       </div>
     )
   }
